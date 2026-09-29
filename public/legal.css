@@ -1,0 +1,15 @@
+@font-face{font-family:'JetBrains Mono';src:url('/fonts/JetBrainsMono-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+:root{color-scheme:dark;--fg:#CFDACD;--fg-muted:#777D77;--bg:#111211;--link:#42C07E;font-size:18px}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}
+body{font-family:'JetBrains Mono',monospace}
+::selection{background:var(--link);color:var(--bg)}
+.legal-page{min-height:100dvh;overflow:auto}
+.legal-text{list-style:none;margin:0;padding:12px 24px 12px 0;font:inherit;line-height:1.35;counter-reset:line;white-space:nowrap;min-width:max-content}
+.legal-text li{display:flex;gap:20px}
+.legal-text li::before{counter-increment:line;content:counter(line) " |    ";flex:0 0 64px;width:64px;text-align:right;color:var(--fg-muted);user-select:none}
+.legal-text span{white-space:pre}
+.legal-text h1,.legal-text h2,.legal-text h3{font:inherit;margin:0}
+.legal-tag{color:#C15F5F}
+a{color:var(--link);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--link);outline-offset:3px}

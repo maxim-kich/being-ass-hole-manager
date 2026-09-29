@@ -1,0 +1,4 @@
+JEV_API_KEY=replace-with-your-typesafe-api-key
+
+# Set a long, unique password for /fucked-up-stories
+ADMIN_PASSWORD=

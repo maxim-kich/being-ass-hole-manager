@@ -1,0 +1,19 @@
+# Allow user-triggered social previews of shared pages and their images.
+# Keep APIs, review pages, and other paths excluded from crawling.
+User-agent: facebookexternalhit
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: Slackbot-LinkExpanding
+User-agent: Slack-ImgProxy
+User-agent: Discordbot
+User-agent: TelegramBot
+User-agent: WhatsApp
+Allow: /$
+Allow: /s/
+Allow: /results/
+Allow: /share/
+Disallow: /
+
+# Search and other crawlers remain blocked.
+User-agent: *
+Disallow: /

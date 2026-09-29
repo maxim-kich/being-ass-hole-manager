@@ -1,0 +1,15 @@
+import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { readFile } from 'node:fs/promises';
+import { after } from 'node:test';
+const runtime = new Miniflare(convertV4MiniflareOptions({ modules: true, script: 'export default { fetch() { return new Response("test"); } }', compatibilityDate: '2026-09-28', d1Databases: ['DB'] }));
+export const DB = await runtime.getD1Database('DB');
+const schema = await readFile(new URL('../migrations/0001_assessments.sql', import.meta.url), 'utf8');
+await DB.prepare(schema).run();
+const curationSchema = await readFile(new URL('../migrations/0002_curation.sql', import.meta.url), 'utf8');
+for (const statement of curationSchema.split(';').filter(s => s.trim())) await DB.prepare(statement).run();
+const limitsSchema = await readFile(new URL('../migrations/0003_daily_limit.sql', import.meta.url), 'utf8');
+for (const statement of limitsSchema.split('-- statement-break')) await DB.prepare(statement).run();
+const editSchema = await readFile(new URL('../migrations/0004_edited_story.sql', import.meta.url), 'utf8');
+for (const statement of editSchema.split(';').filter(s => s.trim())) await DB.prepare(statement).run();
+await DB.prepare(await readFile(new URL('../migrations/0005_story_title.sql', import.meta.url), 'utf8')).run();
+after(() => runtime.dispose());
