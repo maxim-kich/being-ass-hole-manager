@@ -9,15 +9,20 @@ function present(row, admin = false) {
   try { return { ...presentAssessment(row), ...privateFields, featured: Boolean(row.featured_at) }; }
   catch { return { id: row.id, ...(row.title ? { title: row.title } : {}), story: row.edited_story ?? row.story, ...privateFields, created_at: row.created_at, status: row.status, state: 'unavailable', featured: Boolean(row.featured_at) }; }
 }
+async function galleryVisible(db) {
+  const row = await db.prepare("SELECT value FROM site_settings WHERE key = 'gallery_visible'").first();
+  return row?.value !== 'false';
+}
 export async function curation(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
   try {
     if (path === '/api/gallery') {
       if (request.method !== 'GET') return reply({}, 405);
+      if (!await galleryVisible(env.DB)) return reply({ visible: false, stories: [], next: null });
       const offset = Math.max(0, Math.min(1000000, Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0));
       const { results } = await env.DB.prepare('SELECT * FROM assessments WHERE featured_at IS NOT NULL ORDER BY featured_at DESC, id DESC LIMIT 25 OFFSET ?').bind(offset).all();
-      return reply({ stories: results.slice(0, 24).map(row => present(row)).filter(row => row.state === 'result'), next: results.length > 24 ? offset + 24 : null });
+      return reply({ visible: true, stories: results.slice(0, 24).map(row => present(row)).filter(row => row.state === 'result'), next: results.length > 24 ? offset + 24 : null });
     }
     if (!env.ADMIN_PASSWORD || !env.DB) return reply({ error: 'Admin access is not configured.' }, 503);
     if (request.method !== 'GET' && request.headers.get('Origin') !== url.origin) return reply({ error: 'Request rejected.' }, 403);
@@ -45,6 +50,13 @@ export async function curation(request, env) {
     if (path === '/api/admin/logout' && request.method === 'POST') {
       await env.DB.prepare('DELETE FROM admin_sessions WHERE token_hash = ?').bind(await digest(token)).run();
       return reply({ ok: true }, 200, { 'Set-Cookie': cookie(request, '', 0) });
+    }
+    if (path === '/api/admin/gallery-visibility') {
+      if (request.method === 'GET') return reply({ visible: await galleryVisible(env.DB) });
+      if (!['PUT', 'DELETE'].includes(request.method)) return reply({}, 405, { Allow: 'GET, PUT, DELETE' });
+      const visible = request.method === 'PUT';
+      await env.DB.prepare("INSERT INTO site_settings (key, value) VALUES ('gallery_visible', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(String(visible)).run();
+      return reply({ visible });
     }
     if (path === '/api/admin/stories' && request.method === 'GET') {
       const offset = Math.max(0, Math.min(1000000, Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0));

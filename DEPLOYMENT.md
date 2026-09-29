@@ -42,7 +42,7 @@ The site can deploy before these secrets are entered, but assessments and admin 
 
 Make sure `maximkich.com` is an active zone in the same Cloudflare account. Deployment attaches `bahm.maximkich.com` as a Custom Domain and Cloudflare provisions DNS and HTTPS. Resolve any conflicting record for that subdomain without changing your apex website records. Worker preview URLs and workers.dev are disabled.
 
-The deploy command applies all five database migrations before publishing. Local stories are not uploaded; production starts empty. Search indexing remains disabled, while social crawlers can fetch metadata and preview images.
+The deploy command applies all database migrations before publishing. Local stories are not uploaded; production starts empty. Search indexing remains disabled, while social crawlers can fetch metadata and preview images.
 
 ## 4. Verify production
 

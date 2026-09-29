@@ -117,3 +117,22 @@ test('admin edits preserve originals and AI responses while public routes only e
   assert.ok(!(await (await call('gallery')).json()).stories.some(story => story.id === id));
   assert.equal((await call(route, 'PUT', cookie, { story: 'Missing' })).status, 404);
 });
+
+test('gallery visibility persists, requires admin access, and preserves featured stories', async () => {
+  assert.equal((await call('admin/gallery-visibility')).status, 401);
+  assert.equal((await call('admin/gallery-visibility', 'DELETE')).status, 401);
+  const login = await call('admin/login', 'POST', null, { password: env.ADMIN_PASSWORD });
+  const cookie = login.headers.get('set-cookie').split(';')[0];
+  const settings = async () => (await (await call('admin/gallery-visibility', 'GET', cookie)).json());
+  assert.equal((await settings()).visible, true);
+  const before = await (await call('gallery')).json();
+  assert.ok(before.stories.length);
+  assert.equal((await call('admin/gallery-visibility', 'DELETE', cookie, null, 'https://evil')).status, 403);
+  assert.equal((await call('admin/gallery-visibility', 'POST', cookie)).status, 405);
+  assert.equal((await call('admin/gallery-visibility', 'DELETE', cookie)).status, 200);
+  assert.equal((await settings()).visible, false);
+  assert.deepEqual(await (await call('gallery')).json(), { visible: false, stories: [], next: null });
+  assert.equal((await call('admin/gallery-visibility', 'PUT', cookie)).status, 200);
+  assert.equal((await settings()).visible, true);
+  assert.deepEqual(await (await call('gallery')).json(), before);
+});

@@ -137,6 +137,12 @@ async function load(reset = false) {
   if (reset) next = 0;
   try {
     const data = await api(`stories?filter=${$('filter').value}&verdict=${$('verdict-filter').value}&offset=${next}`);
+    if (reset) {
+      $('gallery-visible').disabled = true;
+      const settings = await api('gallery-visibility');
+      $('gallery-visible').checked = settings.visible;
+      $('gallery-visible').disabled = false;
+    }
     signedIn(true);
     if (reset) $('admin-stories').replaceChildren();
     $('admin-stories').append(...data.stories.map(reviewCard));
@@ -162,3 +168,18 @@ $('logout').addEventListener('click', async () => {
 });
 for (const [id, event, reset] of [['filter', 'change', true], ['verdict-filter', 'change', true], ['refresh', 'click', true], ['admin-more', 'click', false]]) $(id).addEventListener(event, () => load(reset).catch(error => { $('admin-message').textContent = error.message; }));
 load(true).catch(error => { if (error.message !== 'Please sign in.') $('admin-message').textContent = error.message; });
+
+$('gallery-visible').addEventListener('change', async event => {
+  const toggle = event.currentTarget;
+  const previous = !toggle.checked;
+  toggle.disabled = true;
+  $('admin-message').textContent = '';
+  try {
+    const data = await api('gallery-visibility', { method: toggle.checked ? 'PUT' : 'DELETE' });
+    toggle.checked = data.visible;
+    $('admin-message').textContent = data.visible ? 'Section shown on the homepage.' : 'Section hidden from the homepage.';
+  } catch (error) {
+    toggle.checked = previous;
+    $('admin-message').textContent = error.message;
+  } finally { toggle.disabled = false; }
+});

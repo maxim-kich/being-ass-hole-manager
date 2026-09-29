@@ -33,7 +33,7 @@ $('share').addEventListener('click', async () => {
   }, 2000);
 });
 function show(view, focusId) {
-  $('gallery-view').hidden = view !== 'input';
+  $('gallery-view').hidden = view !== 'input' || $('gallery-view').dataset.visible !== 'true';
   $('main').classList.toggle('home-main', view === 'input');
   if (view !== 'result') shareResult = null;
   views.forEach(id => { $(`${id}-view`).hidden = id !== view; });

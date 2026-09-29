@@ -12,4 +12,5 @@ for (const statement of limitsSchema.split('-- statement-break')) await DB.prepa
 const editSchema = await readFile(new URL('../migrations/0004_edited_story.sql', import.meta.url), 'utf8');
 for (const statement of editSchema.split(';').filter(s => s.trim())) await DB.prepare(statement).run();
 await DB.prepare(await readFile(new URL('../migrations/0005_story_title.sql', import.meta.url), 'utf8')).run();
+await DB.prepare(await readFile(new URL('../migrations/0006_site_settings.sql', import.meta.url), 'utf8')).run();
 after(() => runtime.dispose());

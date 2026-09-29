@@ -10,6 +10,10 @@ async function load() {
     const response = await fetch(`/api/gallery?offset=${next}`, { cache: 'no-store' });
     if (!response.ok) throw new Error();
     const data = await response.json();
+    const gallery = document.getElementById('gallery-view');
+    gallery.dataset.visible = String(data.visible);
+    gallery.hidden = !data.visible || document.getElementById('input-view').hidden;
+    if (!data.visible) { list.replaceChildren(); more.hidden = true; return; }
     list.append(...data.stories.map(storyCard));
     next = data.next;
     more.hidden = next === null;
