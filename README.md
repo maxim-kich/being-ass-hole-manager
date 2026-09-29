@@ -27,21 +27,13 @@ Local D1 records persist in `.wrangler/state/`. Credentials, local databases, bu
 
 ## Deploy to Cloudflare
 
+Production target: **https://bahm.maximkich.com**. Follow [the deployment guide](DEPLOYMENT.md) for account setup, database creation, runtime secrets, domain routing, and production verification.
+
 The included deployment targets **Cloudflare Workers with static assets and D1**. Hosting elsewhere requires adapting the Worker request handler, database binding, asset serving, and rate limit bindings to that platform.
 
-For your own deployment, update the operator information in `public/impressum.html` and `public/terms.html`, and review the text for your service.
+Use the Cloudflare dashboard workflow in [DEPLOYMENT.md](DEPLOYMENT.md). Store the database UUID as the **build variable** `D1_DATABASE_ID`; keep the all-zero placeholder in the public `wrangler.jsonc`. The deployment scripts generate an ignored temporary configuration and remove it afterward. Remote migrations and deployment fail clearly if the variable is missing or invalid. Local development and dry-run builds work without it.
 
-```sh
-npx wrangler login
-npx wrangler d1 create bahm-assessments
-# Put the returned database_id into wrangler.jsonc.
-npx wrangler d1 migrations apply bahm-assessments --remote
-npx wrangler secret put JEV_API_KEY
-npx wrangler secret put ADMIN_PASSWORD
-npm run deploy
-```
-
-Accept Worker creation if prompted when setting the first secret. For Workers Builds, use `npm ci`, `npm run build`, and `npm run deploy` for installation, build, and deployment respectively. The model defaults to `jev-latest` in `wrangler.jsonc`. Local database records are not copied to production.
+Runtime secrets `JEV_API_KEY` and `ADMIN_PASSWORD` belong in the Worker's Variables and Secrets settings. They are separate from build variables. Local database records are not copied to production.
 
 ## Behavior and stored data
 

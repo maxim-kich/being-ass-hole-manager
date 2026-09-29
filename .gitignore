@@ -23,3 +23,6 @@ AGENTS.md
 *.db-*
 *.pem
 *.key
+
+# Temporary deployment configuration with the dashboard database ID
+.wrangler-build-*.json

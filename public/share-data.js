@@ -1,7 +1,7 @@
 export const SHARE_IMAGE_VERSION = '12';
 export const homeShare = {
   title: 'BAHM — Is my manager being an a-hole?',
-  description: 'Get an AI assessment of the management behavior. Describe the situation and get honest view.'
+  description: 'Get an AI assessment of the management behavior. Describe the situation and get an honest view.'
 };
 export function resultDescription(story = '') {
   const suffix = ` — ${homeShare.description}`;
@@ -19,7 +19,7 @@ export function shareData(origin, data) {
   const result = data?.state === 'result';
   const title = result ? `BAHM — ${data.verdict === 'yes' ? 'Yes. That’s a-hole behavior.' : 'No. This doesn’t cross the line.'}` : homeShare.title;
   const description = result ? resultDescription(data.story) : homeShare.description;
-  return { title, description, url: `${origin}${data?.id ? `/results/${data.id}` : '/'}`, image: `${origin}/share/${result ? data.verdict : 'home'}.png?v=${SHARE_IMAGE_VERSION}`, imageAlt: result ? `BAHM. Powered by JEV. ${data.verdict === 'yes' ? 'Yes. That’s an a-hole manager.' : 'An a-hole manager was not detected.'}` : 'BAHM. Powered by JEV. Is my manager being an a-hole? Describe the situation and get honest assessment.' };
+  return { title, description, url: `${origin}${data?.id ? `/results/${data.id}` : '/'}`, image: `${origin}/share/${result ? data.verdict : 'home'}.png?v=${SHARE_IMAGE_VERSION}`, imageAlt: result ? `BAHM. Powered by JEV. ${data.verdict === 'yes' ? 'Yes. That’s an a-hole manager.' : 'An a-hole manager was not detected.'}` : 'BAHM. Powered by JEV. Is my manager being an a-hole? Describe the situation and get an honest assessment.' };
 }
 export const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export function shareTags(meta) {

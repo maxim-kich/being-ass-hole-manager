@@ -60,3 +60,13 @@ test('result images are static and do not depend on the story', async () => {
     assert.equal(response.headers.get('Content-Type'),'image/png');
   }
 });
+
+test('configured production origin controls canonical and social URLs on alternate hosts', async () => {
+  const response = await worker.fetch(new Request('https://preview.example/'), { ...env, SITE_URL: 'https://bahm.maximkich.com' });
+  const html = await response.text();
+  assert.ok(html.includes('<link rel="canonical" href="https://bahm.maximkich.com/">'));
+  assert.ok(html.includes('property="og:url" content="https://bahm.maximkich.com/"'));
+  assert.ok(html.includes('property="og:image" content="https://bahm.maximkich.com/share/home.png'));
+  assert.ok(html.includes('name="twitter:image" content="https://bahm.maximkich.com/share/home.png'));
+  assert.ok(!html.includes('https://preview.example'));
+});

@@ -155,7 +155,7 @@ export default {
       headers.delete('ETag');
       let html = await shell.text();
       html = html.replace(/<title>.*?<\/title>/s, '').replace(/<meta name="description"[^>]*>/, '');
-      const meta = shareData(new URL(request.url).origin, data?.state === 'result' ? data : undefined);
+      const meta = shareData(env.SITE_URL || new URL(request.url).origin, data?.state === 'result' ? data : undefined);
       html = html.replace('</head>', `${shareTags(meta)}\n</head>`);
       return new Response(request.method === 'HEAD' ? null : html, { status, headers });
     }
