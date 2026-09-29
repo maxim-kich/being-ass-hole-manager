@@ -69,6 +69,25 @@ export async function curation(request, env) {
         bindings.push(verdict);
       }
       const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+      const outcome = url.searchParams.get('outcome');
+      if (['successful', 'unsuccessful'].includes(outcome)) {
+        // Filter with the same interpreter used by the cards, before pagination.
+        const stories = [];
+        let cursor = offset;
+        while (true) {
+          const { results } = await env.DB.prepare(`SELECT * FROM assessments ${where} ORDER BY created_at DESC, id DESC LIMIT 100 OFFSET ?`).bind(...bindings, cursor).all();
+          for (const row of results) {
+            const story = present(row, true);
+            const matches = outcome === 'successful' ? story.state === 'result' : story.status !== 'pending' && story.state !== 'result';
+            if (matches) {
+              if (stories.length === 24) return reply({ stories, next: cursor });
+              stories.push(story);
+            }
+            cursor++;
+          }
+          if (results.length < 100) return reply({ stories, next: null });
+        }
+      }
       const { results } = await env.DB.prepare(`SELECT * FROM assessments ${where} ORDER BY created_at DESC, id DESC LIMIT 25 OFFSET ?`).bind(...bindings, offset).all();
       return reply({ stories: results.slice(0, 24).map(row => present(row, true)), next: results.length > 24 ? offset + 24 : null });
     }

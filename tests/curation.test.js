@@ -136,3 +136,29 @@ test('gallery visibility persists, requires admin access, and preserves featured
   assert.equal((await settings()).visible, true);
   assert.deepEqual(await (await call('gallery')).json(), before);
 });
+
+test('outcome filters use rendered results, combine with other filters, and paginate matches', async () => {
+  await DB.prepare('DELETE FROM assessments').run();
+  const login = await call('admin/login', 'POST', null, { password: env.ADMIN_PASSWORD });
+  const cookie = login.headers.get('set-cookie').split(';')[0];
+  const choice = value => ({ type: 'choice', choice: value, confidence: .9 });
+  for (let i = 0; i < 55; i++) {
+    const payload = { answers: { theme_alignment: choice('yes'), evidence_sufficiency: choice(i % 2 ? 'no' : 'yes'), asshole: choice('yes'), ...Object.fromEntries(scales.map(({ id }) => [id, { type: 'score', score: 1, confidence: .8 }])) } };
+    await DB.prepare("INSERT INTO assessments (id,story,created_at,model,status,model_response,featured_at) VALUES (?, ?, ?, 'test', ?, ?, ?)").bind(crypto.randomUUID(), `Outcome ${i}`, new Date(2026, 0, i + 1).toISOString(), i === 54 ? 'pending' : i === 53 ? 'failed' : 'completed', i === 51 ? '{}' : JSON.stringify(payload), i === 0 ? '2026-01-01' : null).run();
+  }
+  const list = async query => (await (await call(`admin/stories?${query}`, 'GET', cookie)).json());
+  for (const outcome of ['successful', 'unsuccessful']) {
+    const first = await list(`outcome=${outcome}`);
+    assert.equal(first.stories.length, 24);
+    assert.notEqual(first.next, null);
+    const second = await list(`outcome=${outcome}&offset=${first.next}`);
+    assert.equal(second.stories.length, 3);
+    assert.equal(second.next, null);
+    const combined = [...first.stories, ...second.stories];
+    assert.equal(new Set(combined.map(s => s.id)).size, 27);
+    assert.ok(combined.every(s => outcome === 'successful' ? s.state === 'result' : s.status !== 'pending' && s.state !== 'result'));
+  }
+  assert.equal((await list('outcome=successful&filter=featured&verdict=yes')).stories.length, 1);
+  assert.equal((await list('outcome=unsuccessful&filter=featured')).stories.length, 0);
+  assert.equal((await list('outcome=successful&verdict=no')).stories.length, 0);
+});

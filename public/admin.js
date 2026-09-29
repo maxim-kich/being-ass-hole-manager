@@ -133,10 +133,10 @@ function reviewCard(story) {
 async function load(reset = false) {
   if (busy) return;
   busy = true;
-  $('refresh').disabled = $('admin-more').disabled = $('filter').disabled = $('verdict-filter').disabled = true;
+  $('refresh').disabled = $('admin-more').disabled = $('filter').disabled = $('verdict-filter').disabled = $('outcome-filter').disabled = true;
   if (reset) next = 0;
   try {
-    const data = await api(`stories?filter=${$('filter').value}&verdict=${$('verdict-filter').value}&offset=${next}`);
+    const data = await api(`stories?filter=${$('filter').value}&verdict=${$('verdict-filter').value}&outcome=${$('outcome-filter').value}&offset=${next}`);
     if (reset) {
       $('gallery-visible').disabled = true;
       const settings = await api('gallery-visibility');
@@ -149,7 +149,7 @@ async function load(reset = false) {
     next = data.next;
     $('admin-more').hidden = next === null;
     $('admin-empty').hidden = Boolean($('admin-stories').children.length);
-  } finally { busy = false; $('refresh').disabled = $('admin-more').disabled = $('filter').disabled = $('verdict-filter').disabled = false; }
+  } finally { busy = false; $('refresh').disabled = $('admin-more').disabled = $('filter').disabled = $('verdict-filter').disabled = $('outcome-filter').disabled = false; }
 }
 $('login-form').addEventListener('submit', async event => {
   event.preventDefault();
@@ -166,7 +166,7 @@ $('logout').addEventListener('click', async () => {
   try { await api('logout', { method: 'POST' }); signedIn(false); $('admin-message').textContent = ''; $('password').focus(); }
   catch (error) { $('admin-message').textContent = error.message; }
 });
-for (const [id, event, reset] of [['filter', 'change', true], ['verdict-filter', 'change', true], ['refresh', 'click', true], ['admin-more', 'click', false]]) $(id).addEventListener(event, () => load(reset).catch(error => { $('admin-message').textContent = error.message; }));
+for (const [id, event, reset] of [['filter', 'change', true], ['verdict-filter', 'change', true], ['outcome-filter', 'change', true], ['refresh', 'click', true], ['admin-more', 'click', false]]) $(id).addEventListener(event, () => load(reset).catch(error => { $('admin-message').textContent = error.message; }));
 load(true).catch(error => { if (error.message !== 'Please sign in.') $('admin-message').textContent = error.message; });
 
 $('gallery-visible').addEventListener('change', async event => {
