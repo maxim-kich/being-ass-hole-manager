@@ -13,7 +13,7 @@ const env = { DB, ASSETS };
 const request = (path, method = 'GET') => worker.fetch(new Request(`https://bahm.example${path}`, { method }), env);
 test('home HTML provides absolute crawler metadata and a real 1200x630 PNG', async () => {
   const html = await (await request('/')).text();
-  assert.match(html, /property="og:image" content="https:\/\/bahm.example\/share\/home.png\?v=12"/);
+  assert.match(html, /property="og:image" content="https:\/\/bahm.example\/share\/home.png\?v=14"/);
   assert.equal((html.match(/<title>/g) || []).length, 1);
   const response = await request('/share/home.png');
   assert.equal(response.headers.get('Content-Type'), 'image/png');
@@ -29,7 +29,7 @@ test('saved results include escaped story descriptions and static verdict image 
     await handleAssessment(new Request('https://bahm.example/api/assess', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,situation:'Private story text <script>secret</script>'})}), {...env,JEV_API_KEY:'test'}, async () => Response.json(payload));
     const response = await request(`/results/${id}`); const html = await response.text();
     assert.equal(response.status,200); assert.ok(html.includes(`https://bahm.example/share/${verdict}.png`));
-    assert.ok(html.includes(verdict === 'yes' ? 'Yes. That’s' : 'No. This doesn’t')); assert.ok(html.includes('Private story text &lt;script&gt;secret&lt;/script&gt;')); assert.ok(!html.includes('<script>secret</script>'));
+    assert.ok(html.includes(verdict === 'yes' ? 'This behavior crosses the line' : 'This behavior doesn’t cross the line')); assert.ok(html.includes('Private story text &lt;script&gt;secret&lt;/script&gt;')); assert.ok(!html.includes('<script>secret</script>'));
     const legacy = await request(`/share/${id}.png`); assert.equal(legacy.status,302); assert.ok(legacy.headers.get('Location').includes(`/share/${verdict}.png`));
     assert.equal(await (await request(`/results/${id}`,'HEAD')).text(),'');
   }
@@ -69,4 +69,19 @@ test('configured production origin controls canonical and social URLs on alterna
   assert.ok(html.includes('property="og:image" content="https://bahm.maximkich.com/share/home.png'));
   assert.ok(html.includes('name="twitter:image" content="https://bahm.maximkich.com/share/home.png'));
   assert.ok(!html.includes('https://preview.example'));
+});
+
+test('homepage is indexable while result pages and admin stay excluded', async () => {
+  for (const path of ['/', '/index.html']) {
+    const response = await request(path);
+    assert.equal(response.headers.get('X-Robots-Tag'), 'index, follow');
+    assert.match(await response.text(), /<meta name="robots" content="index, follow">/);
+  }
+  const response = await request(`/results/${crypto.randomUUID()}`);
+  assert.equal(response.headers.get('X-Robots-Tag'), 'noindex, nofollow, noarchive');
+  assert.match(await response.text(), /<meta name="robots" content="noindex, nofollow, noarchive">/);
+  const admin = await readFile(new URL('../public/fucked-up-stories.html', import.meta.url), 'utf8');
+  assert.match(admin, /<meta name="robots" content="noindex,nofollow,noarchive">/);
+  const headers = await readFile(new URL('../public/_headers', import.meta.url), 'utf8');
+  assert.match(headers, /X-Robots-Tag: noindex, nofollow, noarchive/);
 });

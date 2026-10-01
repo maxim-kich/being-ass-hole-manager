@@ -9,10 +9,10 @@ export function shareSvg(data) {
   let content = logo + text(1136, 80, 24, 'Powered by JEV', '#777D77').replace('x="1136"', 'x="1136" text-anchor="end"');
   const headline = (y, value, fill) => text(64, y, 115, value, fill).replace('<text ', '<text letter-spacing="-0.065em" font-weight="600" ');
   if (result) {
-    const lines = data.verdict === 'yes' ? ['Yes. That’s an', 'a-hole manager.'] : ['An a-hole manager', 'was not detected.'];
+    const lines = data.verdict === 'yes' ? ['Yes. That’s an', '@-h*le manager.'] : ['An @-h*le manager', 'was not detected.'];
     lines.forEach((line, i) => { content += headline(568 - (lines.length - 1 - i) * 126, line, color); });
   } else {
-    content += headline(363, 'Is my manager', '#CFDACD') + headline(489, 'being an a-hole?', color);
+    content += headline(363, 'Is my manager', '#CFDACD') + headline(489, 'being an @-h*le?', color);
     content += text(64, 568, 27, 'Describe the situation and get honest assessment.');
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#111211"/><rect x="64" y="114" width="1072" height="1" fill="#363936"/>${content}</svg>`;

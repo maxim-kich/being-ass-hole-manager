@@ -149,11 +149,13 @@ export default {
       const shell = await env.ASSETS.fetch(new Request(new URL('/', request.url), { method: 'GET' }));
       const headers = new Headers(shell.headers);
       headers.set('Cache-Control', 'no-store');
-      headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+      const robots = pathname.startsWith('/results/') ? 'noindex, nofollow, noarchive' : 'index, follow';
+      headers.set('X-Robots-Tag', robots);
       headers.set('Referrer-Policy', 'no-referrer');
       headers.delete('Content-Length');
       headers.delete('ETag');
       let html = await shell.text();
+      html = html.replace(/<meta name="robots"[^>]*>/, `<meta name="robots" content="${robots}">`);
       html = html.replace(/<title>.*?<\/title>/s, '').replace(/<meta name="description"[^>]*>/, '');
       const meta = shareData(env.SITE_URL || new URL(request.url).origin, data?.state === 'result' ? data : undefined);
       html = html.replace('</head>', `${shareTags(meta)}\n</head>`);

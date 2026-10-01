@@ -93,7 +93,7 @@ function renderResult(data, story = $('situation').value) {
   storyTitle.hidden = !data.title;
   $('submitted-story').textContent = story;
   $('submitted-story').setAttribute('aria-label', data.edited ? 'Edited story' : 'Your submitted story');
-  $('verdict-title').textContent = yes ? 'Yes. That’s a-hole behavior.' : 'No. This doesn’t cross the line.';
+  $('verdict-title').textContent = yes ? 'Yes. That’s @-h*le behavior.' : 'No. This doesn’t cross the line.';
   $('confidence').textContent = `Model confidence: ${Math.round(data.confidence * 100)}%`;
   const cards = scales.map(scale => {
     const score = data.scores.find(item => item.id === scale.id);
